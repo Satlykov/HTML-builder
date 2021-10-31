@@ -7,7 +7,6 @@ fs.readFile(filePath, (err, content) => {
     throw err;
   }
 
-
   const data = Buffer.from(content);
   console.log(data.toString());
 });
