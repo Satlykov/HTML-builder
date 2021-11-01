@@ -17,5 +17,5 @@ fs.readdir('./04-copy-directory/files', (err, data) => {
       }
     );
   });
-  console.log('Finish copy!');
+  console.log('Finished copying!');
 });
