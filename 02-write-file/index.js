@@ -17,11 +17,9 @@ const rl = readline.createInterface({ input, output });
 function questions() {
   rl.question('Enter text: ', (answer) => {
     if (answer === 'exit') {
-      console.log('Good buy!');
-  
       rl.close();
     } else {
-      writeStream.write(`${answer}\n`);
+      writeStream.write(`\n${answer}\n`);
   
       console.log(`Thank you for entering text: (${answer})`);
       questions();

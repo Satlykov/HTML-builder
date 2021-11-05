@@ -4,9 +4,11 @@ const src = './03-files-in-folder/secret-folder';
 
 fs.readdir(src, (err, data) => {
   err ? console.log(err) : null;
-  data.forEach( file => {
-    let size = (fs.statSync(`${src}/${file}`).size) / 1000;
-    let strFile = `${path.parse(file).name} - ${path.extname(file).slice(1)} - ${size}kb`;
-    fs.statSync(`${src}/${file}`).size === 0 ? null : console.log(strFile);
+  data.forEach((file) => {
+    fs.stat(`${src}/${file}`, (err, stat) => {
+      err ? console.log(err) : null;
+      stat.isFile() ? console.log(`${file.split('.')[0]} - ${file.split('.')[1]} - ${stat.size / 1000} KB`) : null;
+    })
   });
 });
+
