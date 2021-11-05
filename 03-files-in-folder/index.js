@@ -7,7 +7,7 @@ fs.readdir(src, (err, data) => {
   data.forEach((file) => {
     fs.stat(`${src}/${file}`, (err, stat) => {
       err ? console.log(err) : null;
-      stat.isFile() ? console.log(`${file.split('.')[0]} - ${file.split('.')[1]} - ${stat.size / 1000} KB`) : null;
+      stat.isFile() ? console.log(`${file.split('.')[0]} - ${file.split('.')[1]} - ${stat.size} Byte`) : null;
     })
   });
 });
