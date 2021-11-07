@@ -50,7 +50,7 @@ function changeIndexHtml() {
       });
     }
   );
-  console.log('Bundle ready!');
+  console.log('Bundle HTML ready!');
 }
 
 function addCssStyle() {
@@ -79,6 +79,7 @@ function addCssStyle() {
 
 function addAssets() {
   fs.mkdir('./06-build-page/project-dist/assets', () => {});
+  addDirAssets();
 
   fs.readdir('./06-build-page/assets', (err, data) => {
     err ? console.log(err) : null;
@@ -104,53 +105,81 @@ function copyAssets(dist) {
   });
 }
 
-function deleteAssets() {
-  fs.readdir('./06-build-page/project-dist/assets', (err, data) => {
-    err ? console.log(err) : null;
-    data.forEach((dist) => {
-      fs.readdir(
-        `./06-build-page/project-dist/assets/${dist}`,
-        (err, files) => {
-          err ? console.log(err) : null;
-          files.forEach((file) => {
-            let fileName = path.parse(file).base;
-            fs.unlink(
-              `./06-build-page/project-dist/assets/${dist}/${fileName}`,
-              (err) => {
-                err ? console.log(err) : null;
-              }
-            );
-          });
-        }
-      );
-    });
-  });
-}
-
-function checkAssets() {
-  fs.readdir('./06-build-page/project-dist/assets', (err, dir) => {
-    err ? console.log(err) : null;
-    dir.forEach((dist) => {
-      fs.readdir(`./06-build-page/project-dist/assets/${dist}`, (err, arr) => {
-        err ? console.log(err) : null;
-        arr.length == 0 ? null : deleteAssets();
-      });
-    });
-  });
-}
-
 function addDirAssets() {
   fs.readdir('./06-build-page/assets', (err, data) => {
     err ? console.log(err) : null;
     data.forEach((dist) => {
-      fs.mkdir(`./06-build-page/project-dist/assets/${dist}`, (err) => {
-        err ? console.log(err) : null;
+      fs.stat(`./06-build-page/project-dist/assets/${dist}`, function (err) {
+        if (err) {
+          fs.mkdir(`./06-build-page/project-dist/assets/${dist}`, (err) => {
+            err ? console.log(err) : null;
+          });
+        }
       });
     });
   });
 }
 
-addDirAssets();
+function deleteFile(dir, file) {
+  return new Promise(function (resolve, reject) {
+    var filePath = path.join(dir, file);
+    fs.lstat(filePath, function (err, stats) {
+      if (err) {
+        return reject(err);
+      }
+      if (stats.isDirectory()) {
+        resolve(deleteDirectory(filePath));
+      } else {
+        fs.unlink(filePath, function (err) {
+          if (err) {
+            return reject(err);
+          }
+          resolve();
+        });
+      }
+    });
+  });
+}
+
+function deleteDirectory(dir) {
+  return new Promise(function (resolve, reject) {
+    fs.access(dir, function (err) {
+      if (err) {
+        return reject(err);
+      }
+      fs.readdir(dir, function (err, files) {
+        if (err) {
+          return reject(err);
+        }
+        Promise.all(
+          files.map(function (file) {
+            return deleteFile(dir, file);
+          })
+        )
+          .then(function () {
+            fs.rmdir(dir, function (err) {
+              if (err) {
+                return reject(err);
+              }
+              resolve();
+            });
+          })
+          .catch(reject);
+      });
+    });
+  });
+}
+
+const checkAssetsPromise = new Promise((resolve, reject) => {
+  fs.stat('./06-build-page/project-dist/assets', function (err) {
+    if (!err) {
+      deleteDirectory('./06-build-page/project-dist/assets');
+      resolve();
+    } else if(err) {
+      resolve();
+    }
+  });
+})
 
 addIndexHtml();
 
@@ -159,5 +188,7 @@ setTimeout(() => {
 }, 0);
 
 addCssStyle();
-checkAssets();
-addAssets();
+
+checkAssetsPromise.then(() => {
+  addAssets();
+});
