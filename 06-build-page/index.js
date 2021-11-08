@@ -50,7 +50,6 @@ function changeIndexHtml() {
       });
     }
   );
-  console.log('Bundle HTML ready!');
 }
 
 function addCssStyle() {
@@ -122,7 +121,7 @@ function addDirAssets() {
 
 function deleteFile(dir, file) {
   return new Promise(function (resolve, reject) {
-    var filePath = path.join(dir, file);
+    let filePath = path.join(dir, file);
     fs.lstat(filePath, function (err, stats) {
       if (err) {
         return reject(err);
@@ -173,18 +172,20 @@ function deleteDirectory(dir) {
 const checkAssetsPromise = new Promise((resolve, reject) => {
   fs.stat('./06-build-page/project-dist/assets', function (err) {
     if (!err) {
-      deleteDirectory('./06-build-page/project-dist/assets');
-      resolve();
-    } else if(err) {
+      deleteDirectory('./06-build-page/project-dist/assets').then(() => {
+        resolve();
+      });
+    } else if (err) {
       resolve();
     }
   });
-})
+});
 
 addIndexHtml();
 
 setTimeout(() => {
   changeIndexHtml();
+  console.log('Bundle HTML ready!');
 }, 0);
 
 addCssStyle();
